@@ -1,6 +1,7 @@
 package com.example.calculator.calculator;
 
 import android.annotation.SuppressLint;
+import android.content.Context;
 import android.os.Bundle;
 
 import androidx.databinding.DataBindingUtil;
@@ -9,11 +10,11 @@ import androidx.lifecycle.Observer;
 import androidx.navigation.Navigation;
 
 import android.os.Handler;
+import android.os.Vibrator;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SeekBar;
 
 import com.example.calculator.R;
 import com.example.calculator.databinding.FragmentCalculatorBinding;
@@ -23,11 +24,6 @@ import com.google.android.material.snackbar.Snackbar;
 public class CalculatorFragment extends Fragment implements View.OnClickListener {
     private FragmentCalculatorBinding binding;
     private CalculatorViewModel viewModel;
-
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
@@ -40,8 +36,27 @@ public class CalculatorFragment extends Fragment implements View.OnClickListener
         setOnClickListeners();
         initObservers();
 
+        binding.buttonCalculate.setOnTouchListener(new View.OnTouchListener() {
+            long startTime;
+            long totalTime;
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    startTime = System.currentTimeMillis();
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    totalTime = System.currentTimeMillis() - startTime;
+                    if (totalTime >= 4000) {
+                        viewModel.turnSecretModeOn();
+                    } else viewModel.calculate();
+                }
+                return true;
+            }
+        });
+
         return binding.getRoot();
     }
+
 
     private void initObservers() {
         viewModel.getIncorrectExpression().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
@@ -56,6 +71,14 @@ public class CalculatorFragment extends Fragment implements View.OnClickListener
             @Override
             public void onChanged(Boolean aBoolean) {
                 if (aBoolean) navigateToSecretScreen();
+            }
+        });
+
+        viewModel.getIsSecretMode().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean aBoolean) {
+                if (aBoolean) vibrate();
+
             }
         });
     }
@@ -80,7 +103,6 @@ public class CalculatorFragment extends Fragment implements View.OnClickListener
         binding.buttonDot.setOnClickListener(this);
         binding.buttonDelete.setOnClickListener(this);
         binding.buttonClear.setOnClickListener(this);
-//        binding.buttonCalculate.setOnClickListener(this);
     }
 
     @Override
@@ -150,6 +172,13 @@ public class CalculatorFragment extends Fragment implements View.OnClickListener
         }
 
         viewModel.addSymbol(buttonText);
+    }
+
+    private void vibrate() {
+        Vibrator vibrator = (Vibrator) requireContext().getSystemService(Context.VIBRATOR_SERVICE);
+        if (vibrator.hasVibrator()) {
+            vibrator.vibrate(100);
+        }
     }
 
     private void navigateToSecretScreen() {

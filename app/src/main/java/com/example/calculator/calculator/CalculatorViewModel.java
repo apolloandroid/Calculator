@@ -1,5 +1,7 @@
 package com.example.calculator.calculator;
 
+import android.os.Handler;
+
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -10,7 +12,6 @@ import java.util.Objects;
 
 public class CalculatorViewModel extends ViewModel {
     private final String PASSWORD = "123";
-    private boolean isSecretMode = false;
     private String secretModeExpression = "";
 
     private MutableLiveData<String> expression = new MutableLiveData<>("");
@@ -19,10 +20,10 @@ public class CalculatorViewModel extends ViewModel {
         return expression;
     }
 
-    private MutableLiveData<String> result = new MutableLiveData<>("");
+    private MutableLiveData<String> expressionResult = new MutableLiveData<>("");
 
-    public MutableLiveData<String> getResult() {
-        return result;
+    public MutableLiveData<String> getExpressionResult() {
+        return expressionResult;
     }
 
     private MutableLiveData<Boolean> incorrectExpression = new MutableLiveData<>(false);
@@ -37,8 +38,14 @@ public class CalculatorViewModel extends ViewModel {
         return navigateToSecretScreen;
     }
 
+    private MutableLiveData<Boolean> isSecretMode = new MutableLiveData(false);
+
+    public MutableLiveData<Boolean> getIsSecretMode() {
+        return isSecretMode;
+    }
+
     public void addSymbol(String text) {
-        if (isSecretMode) {
+        if (isSecretMode.getValue()) {
             secretModeExpression += text;
             expression.setValue(expression.getValue() + text);
         }
@@ -52,37 +59,48 @@ public class CalculatorViewModel extends ViewModel {
 
     public void clear() {
         expression.setValue("");
-        result.setValue("");
+        expressionResult.setValue("");
     }
 
     public void calculate() {
-        if (!isSecretMode) {
-            try {
-                Expression expressionBuilder = new ExpressionBuilder(Objects.requireNonNull(expression.getValue())).build();
-                double expressionResult = expressionBuilder.evaluate();
-                result.setValue(String.valueOf(expressionResult));
-            } catch (Exception e) {
-                incorrectExpression.setValue(true);
-            }
-        } else {
-
+        try {
+            Expression expression = new ExpressionBuilder(Objects.requireNonNull(this.expression.getValue())).build();
+            double result = expression.evaluate();
+            long resultAsLongNumber = (long) result;
+            if (result == (double) resultAsLongNumber)
+                this.expressionResult.setValue(String.valueOf(resultAsLongNumber));
+            else this.expressionResult.setValue(String.valueOf(result));
+        } catch (Exception e) {
+            incorrectExpression.setValue(true);
         }
-
-
     }
 
     public void turnSecretModeOn() {
-        isSecretMode = true;
+        isSecretMode.setValue(true);
+        counter();
     }
 
     public void turnSecretModeOff() {
-        isSecretMode = false;
+        isSecretMode.setValue(false);
         navigateToSecretScreen.setValue(false);
         secretModeExpression = "";
-
     }
 
     public void checkSecretPassword() {
         if (secretModeExpression.equals(PASSWORD)) navigateToSecretScreen.setValue(true);
+    }
+
+    public void counter() {
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (secretModeExpression.equals(PASSWORD)) {
+                    navigateToSecretScreen.setValue(true);
+
+                }
+                turnSecretModeOff();
+            }
+        }, 5000);
     }
 }
