@@ -4,6 +4,13 @@ buildscript {
         google()
         jcenter()
     }
+
+    ext {
+        gradleVersion = '4.0.1'
+        archLifecycleVersion = '1.1.1'
+        navigationVersion = '1.0.0-alpha08'
+        dataBindingCompilerVersion = gradleVersion
+    }
     dependencies {
         classpath "com.android.tools.build:gradle:4.0.1"
 
