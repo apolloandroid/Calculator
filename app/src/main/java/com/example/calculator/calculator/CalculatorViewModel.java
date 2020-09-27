@@ -1,13 +1,13 @@
 package com.example.calculator.calculator;
 
 import android.os.Handler;
-
+import android.os.Looper;
+import android.os.Message;
+import androidx.annotation.NonNull;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
-
 import java.util.Objects;
 
 public class CalculatorViewModel extends ViewModel {
@@ -49,7 +49,12 @@ public class CalculatorViewModel extends ViewModel {
             secretModeExpression = secretModeExpression + text;
             expression.setValue(expression.getValue() + text);
         }
-        expression.setValue(expression.getValue() + text);
+        if (!expressionResult.getValue().equals("")){
+            expression.setValue(expressionResult.getValue() + text);
+            expressionResult.setValue("");
+        }
+
+        else expression.setValue(expression.getValue() + text);
     }
 
     public void deleteSymbol() {
@@ -91,7 +96,13 @@ public class CalculatorViewModel extends ViewModel {
     }
 
     public void counter() {
-        final Handler handler = new Handler();
+        final Handler handler = new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                super.handleMessage(msg);
+
+            }
+        };
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {

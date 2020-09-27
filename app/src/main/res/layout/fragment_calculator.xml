@@ -12,26 +12,29 @@
         <TextView
             android:id="@+id/text_input_expression"
             android:layout_width="match_parent"
-            android:layout_height="40dp"
+            android:layout_height="60dp"
             android:background="@color/colorPrimaryDark"
             android:ellipsize="start"
             android:gravity="end"
-            android:padding="8dp"
             android:singleLine="true"
             android:text="@{viewModel.expression}"
             android:textColor="@android:color/white"
-            android:textSize="20sp" />
+            android:textSize="40sp"
+            android:paddingEnd="8dp"
+            android:paddingTop="8dp"
+            android:layout_gravity="center"/>
 
         <TextView
             android:id="@+id/text_output_result"
             android:layout_width="match_parent"
-            android:layout_height="80dp"
+            android:layout_height="100dp"
             android:background="@color/colorPrimaryDark"
             android:gravity="end"
-            android:padding="8dp"
+            android:layout_gravity="center"
             android:singleLine="true"
             android:textColor="@android:color/white"
-            android:textSize="40sp"
+            android:textSize="60sp"
+            android:paddingEnd="8dp"
             android:text="@{viewModel.expressionResult}"/>
 
         <LinearLayout
