@@ -46,7 +46,7 @@ public class CalculatorViewModel extends ViewModel {
 
     public void addSymbol(String text) {
         if (isSecretMode.getValue()) {
-            secretModeExpression += text;
+            secretModeExpression = secretModeExpression + text;
             expression.setValue(expression.getValue() + text);
         }
         expression.setValue(expression.getValue() + text);
@@ -86,8 +86,8 @@ public class CalculatorViewModel extends ViewModel {
         secretModeExpression = "";
     }
 
-    public void checkSecretPassword() {
-        if (secretModeExpression.equals(PASSWORD)) navigateToSecretScreen.setValue(true);
+    public boolean checkSecretPassword() {
+        return secretModeExpression.equals(PASSWORD);
     }
 
     public void counter() {
@@ -95,10 +95,7 @@ public class CalculatorViewModel extends ViewModel {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (secretModeExpression.equals(PASSWORD)) {
-                    navigateToSecretScreen.setValue(true);
-
-                }
+                if (checkSecretPassword()) navigateToSecretScreen.setValue(true);
                 turnSecretModeOff();
             }
         }, 5000);

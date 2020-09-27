@@ -78,7 +78,6 @@ public class CalculatorFragment extends Fragment implements View.OnClickListener
             @Override
             public void onChanged(Boolean aBoolean) {
                 if (aBoolean) vibrate();
-
             }
         });
     }
@@ -116,7 +115,7 @@ public class CalculatorFragment extends Fragment implements View.OnClickListener
                 buttonText = binding.buttonSubtract.getText().toString();
                 break;
             case R.id.button_multiply:
-                buttonText = binding.buttonMultiply.getText().toString();
+                buttonText = "*";
                 break;
             case R.id.button_divide:
                 buttonText = binding.buttonDivide.getText().toString();
