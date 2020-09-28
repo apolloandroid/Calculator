@@ -9,7 +9,6 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.navigation.Navigation;
 
-import android.os.Handler;
 import android.os.Vibrator;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -70,7 +69,10 @@ public class CalculatorFragment extends Fragment implements View.OnClickListener
         viewModel.getNavigateToSecretScreen().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean aBoolean) {
-                if (aBoolean) navigateToSecretScreen();
+                if (aBoolean) {
+                    navigateToSecretScreen();
+                    viewModel.turnSecretModeOff();
+                }
             }
         });
 
@@ -160,10 +162,10 @@ public class CalculatorFragment extends Fragment implements View.OnClickListener
                 buttonText = binding.buttonDot.getText().toString();
                 break;
             case R.id.button_delete:
-                viewModel.deleteSymbol();
+                viewModel.deleteLastSymbol();
                 break;
             case R.id.button_clear:
-                viewModel.clear();
+                viewModel.clearInput();
                 break;
             case R.id.button_calculate:
                 viewModel.calculate();
