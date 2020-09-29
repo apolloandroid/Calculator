@@ -47,7 +47,7 @@ dependencies {
     // Library for calculating
     implementation "net.objecthunter:exp4j:0.4.8"
 
-// Dependency Injection framework
+    // Dependency Injection framework
     implementation "com.google.dagger:dagger:2.12"
     implementation "com.google.dagger:dagger-android-support:2.12"
     annotationProcessor "com.google.dagger:dagger-android-processor:2.12"
