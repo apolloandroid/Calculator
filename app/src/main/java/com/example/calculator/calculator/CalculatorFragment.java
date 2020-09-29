@@ -80,7 +80,7 @@ public class CalculatorFragment extends Fragment implements View.OnClickListener
             @Override
             public void onChanged(Boolean isIncorrectExpression) {
                 if (isIncorrectExpression)
-                    Snackbar.make(binding.getRoot(), R.string.incorrect_expression, Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(binding.getRoot(), R.string.text_incorrect_expression, Snackbar.LENGTH_LONG).show();
             }
         });
 
