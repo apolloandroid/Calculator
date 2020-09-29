@@ -1,6 +1,6 @@
 package com.example.calculator.di;
 
-import com.example.calculator.calculator.CalculatorFragment;
+import com.example.calculator.ui.calculator.CalculatorFragment;
 
 
 import javax.inject.Singleton;
