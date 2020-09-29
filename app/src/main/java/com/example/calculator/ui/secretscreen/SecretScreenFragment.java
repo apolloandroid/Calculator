@@ -1,4 +1,4 @@
-package com.example.calculator.secretscreen;
+package com.example.calculator.ui.secretscreen;
 
 import android.graphics.PorterDuff;
 import android.os.Bundle;
