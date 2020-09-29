@@ -79,14 +79,23 @@ public class CalculatorFragment extends Fragment implements View.OnClickListener
             @Override
             public void onChanged(Boolean isIncorrectExpression) {
                 if (isIncorrectExpression)
-                    Snackbar.make(binding.getRoot(), R.string.text_incorrect_expression, Snackbar.LENGTH_LONG).show();
+                    Snackbar.make(
+                            binding.getRoot(),
+                            R.string.text_incorrect_expression,
+                            Snackbar.LENGTH_LONG).show();
             }
         });
 
         viewModel.isSecretModeOn().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
             public void onChanged(Boolean isSecretModeOn) {
-                if (isSecretModeOn) vibrate();
+                if (isSecretModeOn) {
+                    vibrate();
+                    Snackbar.make(
+                            binding.getRoot(),
+                            R.string.text_secret_mode_on,
+                            Snackbar.LENGTH_LONG).show();
+                }
             }
         });
 

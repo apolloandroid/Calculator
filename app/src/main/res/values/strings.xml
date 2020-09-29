@@ -23,6 +23,7 @@
     <string name="button_zero_text">0</string>
     <string name="button_dot_text">.</string>
     <string name="text_incorrect_expression">Некорректное выражение</string>
+    <string name="text_secret_mode_on">Введите пароль</string>
 
     <!-- Secret fragment -->
     <string name="text_secret_screen">Секретное меню</string>
