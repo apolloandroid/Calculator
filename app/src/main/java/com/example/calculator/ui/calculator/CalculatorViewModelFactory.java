@@ -1,4 +1,4 @@
-package com.example.calculator.calculator;
+package com.example.calculator.ui.calculator;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.ViewModel;
