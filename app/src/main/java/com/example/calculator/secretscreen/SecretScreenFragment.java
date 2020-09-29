@@ -15,7 +15,7 @@ import com.example.calculator.R;
 import com.example.calculator.databinding.FragmentSecretBinding;
 
 
-public class SecretFragment extends Fragment {
+public class SecretScreenFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
