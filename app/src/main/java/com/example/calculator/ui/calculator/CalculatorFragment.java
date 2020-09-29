@@ -40,7 +40,6 @@ public class CalculatorFragment extends Fragment implements View.OnClickListener
         binding.setLifecycleOwner(this);
         binding.setViewModel(viewModel);
         binding.buttonCalculate.setOnTouchListener(this);
-        binding.textOutputResult.setText(viewModel.getExpressionResult().getValue());
         setOnClickListeners();
         initObservers();
         return binding.getRoot();
