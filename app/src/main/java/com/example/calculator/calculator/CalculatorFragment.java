@@ -14,72 +14,90 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.example.calculator.R;
 import com.example.calculator.databinding.FragmentCalculatorBinding;
+import com.example.calculator.di.DaggerAppComponent;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.Objects;
 
-public class CalculatorFragment extends Fragment implements View.OnClickListener {
+import javax.inject.Inject;
+
+
+public class CalculatorFragment extends Fragment implements View.OnClickListener, View.OnTouchListener {
     private FragmentCalculatorBinding binding;
-    private CalculatorViewModel viewModel;
+    @Inject
+    public CalculatorViewModel viewModel;
 
     @SuppressLint("ClickableViewAccessibility")
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        viewModel = new CalculatorViewModel();
+        DaggerAppComponent.create().injectCalculatorFragment(this);
         binding = DataBindingUtil.inflate(inflater, R.layout.fragment_calculator, container, false);
         binding.setLifecycleOwner(this);
         binding.setViewModel(viewModel);
+        binding.buttonCalculate.setOnTouchListener(this);
+        binding.textOutputResult.setText(viewModel.getExpressionResult().getValue());
         setOnClickListeners();
         initObservers();
-
-        binding.buttonCalculate.setOnTouchListener(new View.OnTouchListener() {
-            long startTime;
-            long totalTime;
-
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                    startTime = System.currentTimeMillis();
-                } else if (event.getAction() == MotionEvent.ACTION_UP) {
-                    totalTime = System.currentTimeMillis() - startTime;
-                    if (totalTime >= 4000) {
-                        viewModel.turnSecretModeOn();
-                    } else viewModel.calculate();
-                }
-                return true;
-            }
-        });
-
         return binding.getRoot();
     }
 
+    @Override
+    public void onClick(View v) {
+        Button pressedButton = (Button) v;
+        String text = pressedButton.getId() == R.id.button_multiply ?
+                "*" : pressedButton.getText().toString();
+        switch (pressedButton.getId()) {
+            case R.id.button_delete:
+                viewModel.deleteLastSymbol();
+                break;
+            case R.id.button_clear:
+                viewModel.clearInput();
+                break;
+            default:
+                viewModel.enterSymbol(text);
+        }
+    }
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            viewModel.setSecretModeStartTime(System.currentTimeMillis());
+        } else if (event.getAction() == MotionEvent.ACTION_UP) {
+            long totalTime = System.currentTimeMillis() - viewModel.getSecretModeStartTime();
+            if (totalTime >= viewModel.getSecretModeDuration()) viewModel.turnSecretModeOn();
+            else viewModel.calculateExpression();
+        }
+        return true;
+    }
 
     private void initObservers() {
-        viewModel.getIncorrectExpression().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+        viewModel.isIncorrectExpression().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
-            public void onChanged(Boolean aBoolean) {
-                if (aBoolean)
-                    Snackbar.make(binding.getRoot(), "Incorrect expression", Snackbar.LENGTH_LONG);
+            public void onChanged(Boolean isIncorrectExpression) {
+                if (isIncorrectExpression)
+                    Snackbar.make(binding.getRoot(), R.string.incorrect_expression, Snackbar.LENGTH_LONG).show();
             }
         });
 
-        viewModel.getNavigateToSecretScreen().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+        viewModel.isSecretModeOn().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
             @Override
-            public void onChanged(Boolean aBoolean) {
-                if (aBoolean) {
+            public void onChanged(Boolean isSecretModeOn) {
+                if (isSecretModeOn) vibrate();
+            }
+        });
+
+        viewModel.isNavigateToSecretScreenOn().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
+            @Override
+            public void onChanged(Boolean navigateToSecretScreenOn) {
+                if (navigateToSecretScreenOn) {
                     navigateToSecretScreen();
                     viewModel.turnSecretModeOff();
                 }
-            }
-        });
-
-        viewModel.getIsSecretMode().observe(getViewLifecycleOwner(), new Observer<Boolean>() {
-            @Override
-            public void onChanged(Boolean aBoolean) {
-                if (aBoolean) vibrate();
             }
         });
     }
@@ -106,85 +124,20 @@ public class CalculatorFragment extends Fragment implements View.OnClickListener
         binding.buttonClear.setOnClickListener(this);
     }
 
-    @Override
-    public void onClick(View v) {
-        String buttonText = "";
-        switch (v.getId()) {
-            case R.id.button_add:
-                buttonText = binding.buttonAdd.getText().toString();
-                break;
-            case R.id.button_subtract:
-                buttonText = binding.buttonSubtract.getText().toString();
-                break;
-            case R.id.button_multiply:
-                buttonText = "*";
-                break;
-            case R.id.button_divide:
-                buttonText = binding.buttonDivide.getText().toString();
-                break;
-            case R.id.button_open_bracket:
-                buttonText = binding.buttonOpenBracket.getText().toString();
-                break;
-            case R.id.button_close_bracket:
-                buttonText = binding.buttonCloseBracket.getText().toString();
-                break;
-            case R.id.button_zero:
-                buttonText = binding.buttonZero.getText().toString();
-                break;
-            case R.id.button_one:
-                buttonText = binding.buttonOne.getText().toString();
-                break;
-            case R.id.button_two:
-                buttonText = binding.buttonTwo.getText().toString();
-                break;
-            case R.id.button_three:
-                buttonText = binding.buttonThree.getText().toString();
-                break;
-            case R.id.button_four:
-                buttonText = binding.buttonFour.getText().toString();
-                break;
-            case R.id.button_five:
-                buttonText = binding.buttonFive.getText().toString();
-                break;
-            case R.id.button_six:
-                buttonText = binding.buttonSix.getText().toString();
-                break;
-            case R.id.button_seven:
-                buttonText = binding.buttonSeven.getText().toString();
-                break;
-            case R.id.button_eight:
-                buttonText = binding.buttonEight.getText().toString();
-                break;
-            case R.id.button_nine:
-                buttonText = binding.buttonNine.getText().toString();
-                break;
-            case R.id.button_dot:
-                buttonText = binding.buttonDot.getText().toString();
-                break;
-            case R.id.button_delete:
-                viewModel.deleteLastSymbol();
-                break;
-            case R.id.button_clear:
-                viewModel.clearInput();
-                break;
-            case R.id.button_calculate:
-                viewModel.calculate();
-                break;
+    private void navigateToSecretScreen() {
+        if (Objects.requireNonNull(Navigation.findNavController(binding.getRoot())
+                .getCurrentDestination()).getId() == R.id.calculatorFragment) {
+            Navigation.findNavController(binding
+                    .getRoot())
+                    .navigate(R.id.action_calculatorFragment_to_secretFragment);
         }
-
-        viewModel.addSymbol(buttonText);
     }
 
     private void vibrate() {
         Vibrator vibrator = (Vibrator) requireContext().getSystemService(Context.VIBRATOR_SERVICE);
+        assert vibrator != null;
         if (vibrator.hasVibrator()) {
             vibrator.vibrate(100);
-        }
-    }
-
-    private void navigateToSecretScreen() {
-        if (Navigation.findNavController(binding.getRoot()).getCurrentDestination().getId() == R.id.calculatorFragment) {
-            Navigation.findNavController(binding.getRoot()).navigate(R.id.action_calculatorFragment_to_secretFragment);
         }
     }
 }
