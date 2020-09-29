@@ -1,10 +1,8 @@
 package com.example.calculator.calculator;
 
+import android.annotation.SuppressLint;
 import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 
-import androidx.annotation.NonNull;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
@@ -15,50 +13,60 @@ import net.objecthunter.exp4j.ExpressionBuilder;
 import java.util.Objects;
 
 public class CalculatorViewModel extends ViewModel {
-    private final String PASSWORD = "123";
-
+    private long secretModeStartTime;
+    private String expressionInSecretMode = "";
     private MutableLiveData<String> expression = new MutableLiveData<>("");
+    private MutableLiveData<String> expressionResult = new MutableLiveData<>("0");
+    private MutableLiveData<Boolean> incorrectExpression = new MutableLiveData<>(false);
+    private MutableLiveData<Boolean> navigateToSecretScreenOn = new MutableLiveData<>(false);
+    private MutableLiveData<Boolean> secretModeOn = new MutableLiveData<>(false);
+
+    public long getSecretModeStartTime() {
+        return secretModeStartTime;
+    }
+
+    public void setSecretModeStartTime(long secretModeStartTime) {
+        this.secretModeStartTime = secretModeStartTime;
+    }
+
+    public long getSecretModeDuration() {
+        return 4000L;
+    }
 
     public LiveData<String> getExpression() {
         return expression;
     }
 
-    private MutableLiveData<String> expressionSecret = new MutableLiveData<>("");
-
-    private MutableLiveData<String> expressionResult = new MutableLiveData<>("");
-
     public LiveData<String> getExpressionResult() {
         return expressionResult;
     }
 
-    private MutableLiveData<Boolean> incorrectExpression = new MutableLiveData<>(false);
-
-    public LiveData<Boolean> getIncorrectExpression() {
+    public LiveData<Boolean> isIncorrectExpression() {
         return incorrectExpression;
     }
 
-    private MutableLiveData<Boolean> navigateToSecretScreen = new MutableLiveData<>(false);
-
-    public LiveData<Boolean> getNavigateToSecretScreen() {
-        return navigateToSecretScreen;
+    public LiveData<Boolean> isNavigateToSecretScreenOn() {
+        return navigateToSecretScreenOn;
     }
 
-    private MutableLiveData<Boolean> isSecretMode = new MutableLiveData<>(false);
-
-    public LiveData<Boolean> getIsSecretMode() {
-        return isSecretMode;
+    public LiveData<Boolean> isSecretModeOn() {
+        return secretModeOn;
     }
 
-    public void addSymbol(String text) {
-        if (isSecretMode.getValue()) {
-            expressionSecret.setValue(expressionSecret.getValue() + text);
+    public void enterSymbol(String text) {
+        if (secretModeOn.getValue()) {
+            expressionInSecretMode  += text;
             expression.setValue(expression.getValue() + text);
-            checkSecretPassword();
-            if (expressionSecret.getValue().length() >= 3) expressionSecret.setValue("");
+            checkExpressionInSecretMode();
+            if (expressionInSecretMode.length() >= 3) expressionInSecretMode = "";
         } else {
             if (!expressionResult.getValue().equals("")) {
-                expression.setValue(expressionResult.getValue() + text);
-                expressionResult.setValue("");
+                if (expressionResult.getValue().equals("0")) {
+                    expression.setValue(expression.getValue() + text);
+                } else {
+                    expression.setValue(expressionResult.getValue() + text);
+                    expressionResult.setValue("");
+                }
             } else expression.setValue(expression.getValue() + text);
         }
     }
@@ -70,16 +78,16 @@ public class CalculatorViewModel extends ViewModel {
 
     public void clearInput() {
         expression.setValue("");
-        expressionResult.setValue("");
+        expressionResult.setValue("0");
     }
 
-    public void calculate() {
+    @SuppressLint("DefaultLocale")
+    public void calculateExpression() {
         try {
-            Expression expression = new ExpressionBuilder(Objects.requireNonNull(this.expression.getValue())).build();
-            double result = expression.evaluate();
-            long resultAsLongNumber = (long) result;
-            if (result == (double) resultAsLongNumber)
-                expressionResult.setValue(String.valueOf(resultAsLongNumber));
+            Expression expressionToEvaluate = new ExpressionBuilder(
+                    Objects.requireNonNull(expression.getValue())).build();
+            double result = expressionToEvaluate.evaluate();
+            if (result == (long) result) expressionResult.setValue(String.valueOf((long) result));
             else expressionResult.setValue(String.format("%.2f", result));
         } catch (Exception e) {
             incorrectExpression.setValue(true);
@@ -87,27 +95,29 @@ public class CalculatorViewModel extends ViewModel {
     }
 
     public void turnSecretModeOn() {
-        isSecretMode.setValue(true);
-        counter();
+        secretModeOn.setValue(true);
+        setUpCounter();
     }
 
     public void turnSecretModeOff() {
-        isSecretMode.setValue(false);
-        navigateToSecretScreen.setValue(false);
-        expressionSecret.setValue("");
+        secretModeOn.setValue(false);
+        navigateToSecretScreenOn.setValue(false);
+        expressionInSecretMode = "";
     }
 
-    public void checkSecretPassword() {
-        if (expressionSecret.getValue().equals(PASSWORD)) navigateToSecretScreen.setValue(true);
-    }
-
-    public void counter() {
-        final Handler handler = new Handler();
+    private void setUpCounter() {
+        Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 turnSecretModeOff();
             }
         }, 5000);
+    }
+
+    private void checkExpressionInSecretMode() {
+        String passwordToSecretScreen = "123";
+        if (expressionInSecretMode.equals(passwordToSecretScreen))
+            navigateToSecretScreenOn.setValue(true);
     }
 }
